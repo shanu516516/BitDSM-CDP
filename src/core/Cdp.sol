@@ -6,7 +6,7 @@ import "../interfaces/ICdp.sol";
 import "../interfaces/IBitcoinPod.sol";
 import "../interfaces/IAppRegistry.sol";
 import "@chainlink/contracts/src/v0.8/interfaces/AggregatorV3Interface.sol";
-
+import "./Constants.sol";
 contract Cdp is ICdp, ReentrancyGuard {
     // State variables
     struct CDPData {
@@ -47,12 +47,13 @@ contract Cdp is ICdp, ReentrancyGuard {
             "Insufficient collateral"
         );
 
-        bitcoinPod.lock();
         cdps[msg.sender] = CDPData({
             collateralAmount: collateralAmount,
             debtAmount: debtAmount,
             lastInterestUpdate: block.timestamp
         });
+        bitcoinPod.lock();
+
         // bitcoinPod.unlock();
     }
 
@@ -160,7 +161,7 @@ contract Cdp is ICdp, ReentrancyGuard {
         // Convert price to uint256 and scale to 8 decimals
         // Chainlink BTC/USD Price Feed for Ethereum Mainnet
         AggregatorV3Interface btcPriceFeed = AggregatorV3Interface(
-            0xF4030086522a5bEEa4988F8cA5B36dbC97BeE88c
+            Constants.aggregatorv3interfaceaddr
         );
 
         // Get latest price from Chainlink price feed
