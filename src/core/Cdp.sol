@@ -5,6 +5,7 @@ import "@openzeppelin/contracts/security/ReentrancyGuard.sol";
 import "../interfaces/ICdp.sol";
 import "../interfaces/IBitcoinPod.sol";
 import "../interfaces/IAppRegistry.sol";
+import "@chainlink/contracts/src/v0.8/interfaces/AggregatorV3Interface.sol";
 
 contract Cdp is ICdp, ReentrancyGuard {
     // State variables
@@ -52,16 +53,14 @@ contract Cdp is ICdp, ReentrancyGuard {
             debtAmount: debtAmount,
             lastInterestUpdate: block.timestamp
         });
-        bitcoinPod.unlock();
+        // bitcoinPod.unlock();
     }
 
     function addCollateral(uint256 amount) external override nonReentrant {
         require(amount > 0, "Amount must be greater than 0");
         require(cdps[msg.sender].collateralAmount > 0, "CDP does not exist");
 
-        bitcoinPod.lock();
         cdps[msg.sender].collateralAmount += amount;
-        bitcoinPod.unlock();
     }
 
     function removeCollateral(uint256 amount) external override nonReentrant {
@@ -77,9 +76,7 @@ contract Cdp is ICdp, ReentrancyGuard {
             "Would make CDP unsafe"
         );
 
-        bitcoinPod.lock();
         cdp.collateralAmount = remainingCollateral;
-        bitcoinPod.unlock();
     }
 
     function generateDebt(uint256 amount) external override nonReentrant {
@@ -118,9 +115,7 @@ contract Cdp is ICdp, ReentrancyGuard {
             "CDP is not unsafe"
         );
 
-        bitcoinPod.lock();
         delete cdps[owner];
-        bitcoinPod.unlock();
     }
 
     function getCollateralRatio(
@@ -161,9 +156,18 @@ contract Cdp is ICdp, ReentrancyGuard {
         }
     }
 
-    function getCollateralPrice() internal pure returns (uint256) {
+    function getCollateralPrice() internal view returns (uint256) {
         // Convert price to uint256 and scale to 8 decimals
-        uint256 btcPrice = uint256(4000000000000);
+        // Chainlink BTC/USD Price Feed for Ethereum Mainnet
+        AggregatorV3Interface btcPriceFeed = AggregatorV3Interface(
+            0xF4030086522a5bEEa4988F8cA5B36dbC97BeE88c
+        );
+
+        // Get latest price from Chainlink price feed
+        (, int256 price, , , ) = btcPriceFeed.latestRoundData();
+        // Convert price to uint256 and scale to 8 decimals (BTC/USD feed uses 8 decimals)
+        uint256 btcPrice = uint256(price);
+        // uint256 btcPrice = uint256(4000000000000);
         return btcPrice;
     }
 }

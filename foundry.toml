@@ -10,6 +10,7 @@ remappings = [
     "@openzeppelin/contracts/=lib/eigenlayer-middleware/lib/openzeppelin-contracts/contracts/",
     "@eigenlayer-middleware/=lib/eigenlayer-middleware/",
     "@eigenlayer/=lib/eigenlayer-middleware/lib/eigenlayer-contracts/",
+    "@chainlink/=lib/chainlink-brownie-contracts/",
 ]
 
 gas_reports = ["*"]
